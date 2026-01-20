@@ -1,0 +1,585 @@
+---
+title: "Applying Multivariate Data Analysis to Identify Drivers of Smartphone Overuse and Inform Student Well-Being Decisions."
+author: "TEYI Kodjo Jerome"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  include = TRUE
+  )
+```
+
+
+# INTRODUCTION
+
+
+## Context and Justification of the Study
+
+Smartphone use has become ubiquitous among university students worldwide. Recent evidence indicates that more than **95% of individuals aged 18–29** own a smartphone, with students exhibiting some of the highest daily usage levels, often ranging between **3.5 and 6 hours per day** (Pew Research Center, 2023). International studies consistently report that between **30% and 45%** of university students exhibit patterns of smartphone overuse or problematic use (Kwon et al., 2013; Peltzer & Pengpid, 2018).
+
+Social media platforms, particularly Instagram, further intensify digital engagement. Studies by Lup et al. (2015) and Verduyn et al. (2017) demonstrate that intensive Instagram use and social comparison processes are associated with **lower well-being**, while social feedback mechanisms such as likes and follower counts reinforce repetitive smartphone checking behaviors (Sherman et al., 2016). These findings motivate the use of indicators such as the Instagram follower-to-following ratio to capture digital social status.
+
+In African contexts, evidence remains more limited but increasingly concerning. Studies conducted in **South Africa, Nigeria, and Ghana** report prevalence rates of problematic smartphone use ranging from **25% to over 50%** among university students. For example, Boddy et al. (2021) found that **53.9%** of South African students exhibited moderate to severe smartphone addiction symptoms, while Omar and Dequan (2023) showed that social media time was a strong predictor of smartphone overuse among Nigerian students.
+
+Despite these findings, most existing studies rely on univariate or simple regression approaches, limiting their ability to capture the **high-dimensional and interdependent structure** of digital behavior, well-being, and lifestyle factors. This gap is particularly relevant in academically demanding environments such as AIMS, where evidence-based insights are needed to inform student support and well-being policies.
+
+Therefore, this study is justified by the need to apply **multivariate data analysis methods**, including regression, PCA, and SVD, to identify the **drivers of smartphone overuse** and transform statistical results into **decision-relevant insights** for student well-being interventions, with particular relevance for African higher education institutions.
+
+
+## Problem Statement
+
+Although smartphone use among university students has been widely studied, identifying the **key drivers of smartphone overuse** in a way that supports **evidence-based decision-making** remains a challenge. Most existing studies rely on descriptive analyses or simple regression models, which fail to capture the **multidimensional and interdependent relationships** between digital exposure, well-being, physical activity, and online social status.
+
+In academically intensive environments such as the African Institute for Mathematical Sciences (AIMS), students combine high smartphone and social media use with demanding cognitive workloads. However, it is still unclear which factors most strongly contribute to excessive smartphone use and how students can be effectively **profiled according to their digital behavior**. This lack of a multivariate perspective limits the ability of institutions to identify at-risk profiles and design targeted well-being interventions.
+
+To address this gap, this study applies **multivariate data analysis methods** to jointly examine smartphone use, social media exposure, happiness, physical activity, and Instagram-based social status among AIMS students.
+
+
+## Objectives of the Study
+
+The **general objective** of this study is to apply multivariate data analysis methods to identify the main drivers of smartphone overuse and to support decision-making related to student well-being.
+
+The **specific objectives** are to:
+- analyze the multivariate structure of students’ digital behavior, well-being, and lifestyle variables using exploratory methods;
+- identify and quantify the key factors that significantly influence daily smartphone use;
+- generate decision-relevant insights that can inform targeted student well-being policies and interventions.
+
+
+## Research Hypotheses
+
+Based on existing literature and the structure of the available data, the following hypotheses are formulated:
+
+- **H1:** Time spent on social networks has a significant positive effect on daily smartphone use.
+- **H2:** Higher happiness levels are associated with lower smartphone use.
+- **H3:** Higher levels of physical activity, measured by daily walking distance, are associated with reduced smartphone use.
+- **H4:** Students with a high Instagram follower-to-following ratio exhibit higher smartphone use than those with a low ratio.
+- **H5:** Smartphone overuse is a multidimensional phenomenon that can be better explained through multivariate analysis than through univariate approaches.
+
+
+## Methodology Overview
+
+This study adopts a quantitative multivariate approach based on behavioral data collected from AIMS students. The analysis considers smartphone use, social media exposure, subjective well-being, physical activity, and Instagram-based digital social status, with additional binary indicators constructed to capture extreme Instagram usage profiles.
+
+All analyses are conducted using **R software**. Exploratory techniques, including **Principal Component Analysis (PCA)** and **Singular Value Decomposition (SVD)**, are first employed to identify latent structures and relationships among variables. Subsequently, **multiple linear regression models** are used to quantify the contribution of key factors to daily smartphone use, with model selection procedures applied to retain the most relevant predictors.
+
+By combining exploratory and inferential multivariate methods, the study produces **decision-relevant insights** aimed at supporting evidence-based student well-being strategies.
+
+
+## Structure of the Paper
+
+This research work is structured as follows. The next section presents a review of the relevant literature, with particular attention given to multivariate statistical methods used to analyze digital behavior and student well-being. The subsequent section describes the methodological framework and the data analysis procedures adopted in this study. The results and their interpretation are then presented and discussed in the following section. Finally, the work concludes with a summary of the main findings and a discussion of their implications for decision-making and student well-being strategies.
+
+
+# Literature Review
+
+## Fundamental Properties, Key Concepts, and Practical Applications of SVD, CA, and MCA
+
+This literature review presents the fundamental principles, procedures, and practical relevance of **Singular Value Decomposition (SVD)**, **Correspondence Analysis (CA)**, and **Multiple Correspondence Analysis (MCA)**. The exposition is primarily based on *The Elements of Statistical Learning* by Hastie, Tibshirani, and Friedman (2009), which provides a rigorous foundation for SVD and its role in high-dimensional data analysis. Although CA and MCA are not treated extensively in the book, they can be naturally understood through their strong connections with SVD and principal component methods.
+
+The presentation is intentionally pedagogical and assumes no prior familiarity with these techniques.
+
+
+## Singular Value Decomposition (SVD)
+
+Singular Value Decomposition is a fundamental matrix factorization technique that underlies many multivariate methods used in high-dimensional data analysis. Hastie et al. (2009) introduce SVD in **Chapter 3** (Section 3.4) in the context of ridge regression, develop its role in **unsupervised learning and PCA in Chapter 14**, and emphasize its importance for **high-dimensional problems (p ≫ N) in Chapter 18**.
+
+Given a data matrix \( \mathbf{X} \in \mathbb{R}^{N \times p} \), SVD decomposes \( \mathbf{X} \) as:
+\[
+\mathbf{X} = \mathbf{U}\mathbf{D}\mathbf{V}^T,
+\]
+where \( \mathbf{U} \) and \( \mathbf{V} \) are orthogonal matrices, and \( \mathbf{D} \) is a diagonal matrix containing non-negative singular values \( d_1 \geq d_2 \geq \dots \geq d_p \).
+
+The singular values quantify the importance of each latent direction in the data, while the orthogonality of the singular vectors ensures interpretability and numerical stability. When several singular values are close to zero, the data effectively lie in a lower-dimensional subspace.
+
+In practice, SVD serves three major purposes highlighted by Hastie et al. (2009):
+- **dimension reduction**, by retaining only the leading singular components;
+- **regularization**, notably in ridge regression, where small singular values are shrunk to reduce overfitting;
+- **computational efficiency**, especially in high-dimensional settings where \( p \gg N \).
+
+For example, in ridge regression (Chapter 3), the shrinkage effect is directly expressed in the SVD basis, where components associated with small singular values are penalized more strongly. In PCA (Chapter 14), SVD provides the optimal low-rank approximation of the data, minimizing reconstruction error.
+
+
+
+## Correspondence Analysis (CA)
+
+Correspondence Analysis is a multivariate exploratory method designed for **categorical data**, typically represented as contingency tables. While Hastie et al. (2009) do not provide a full methodological exposition of CA, they highlight its conceptual links with discriminant analysis and dimension reduction methods in **Chapter 12 (Bibliographic Notes)**, referring notably to the foundational work of Greenacre (1984).
+
+CA can be interpreted as a form of PCA applied to **chi-squared distances**. Given a contingency table, CA decomposes deviations from independence and represents both rows and columns in a low-dimensional space where geometric proximity reflects association.
+
+The method relies on applying SVD to a standardized residual matrix derived from the contingency table. The resulting graphical representations allow complex categorical relationships to be interpreted visually and intuitively.
+
+In practice, CA is widely used in social sciences, marketing, and ecology to explore associations such as preferences across groups or behaviors across categories. Its main strength lies in transforming large, difficult-to-interpret tables into meaningful low-dimensional maps.
+
+
+
+## Multiple Correspondence Analysis (MCA)
+
+Multiple Correspondence Analysis extends CA to the case of **multiple categorical variables**. It is particularly suited for survey and questionnaire data, where several qualitative variables are observed simultaneously. Conceptually, MCA can be viewed as the categorical analogue of PCA.
+
+Although MCA is not explicitly detailed in Hastie et al. (2009), it follows directly from the SVD-based framework developed in **Chapter 14** for PCA. MCA applies CA principles to an indicator matrix or a Burt matrix constructed from multiple categorical variables, decomposing the overall inertia into interpretable dimensions.
+
+In practice, MCA reveals latent structures and profiles among individuals and variables, making it especially useful for identifying behavioral patterns. In applied work, MCA is commonly implemented using software such as **FactoMineR** in R, which provides tools for visualization and interpretation.
+
+
+
+## Summary and Relevance for High-Dimensional Data Analysis
+
+SVD constitutes the mathematical foundation of PCA and plays a central role in modern high-dimensional data analysis, as emphasized in Chapters **3, 14, and 18** of Hastie et al. (2009). Correspondence Analysis and Multiple Correspondence Analysis build upon this foundation to address categorical data, extending the reach of SVD-based methods beyond purely numerical settings.
+
+Together, SVD, CA, and MCA provide powerful exploratory tools that allow complex, high-dimensional datasets to be summarized, visualized, and interpreted. Their practical relevance lies in their ability to uncover latent structures without imposing strong parametric assumptions, making them particularly suitable for exploratory and decision-support analyses.
+
+
+```{r include=FALSE}
+# Load necessary libraries for descriptive analysis
+library(ggplot2)  # For visualizations
+library(corrplot) # For correlation plot
+library(psych)    # For enhanced describe function (optional, but useful)
+library(tidyr)
+# Load required libraries
+library(FactoMineR)
+library(factoextra)
+```
+
+
+```{r include=FALSE}
+# Load the dataset
+# Note: The file uses ';' as separator and ',' as decimal point (based on data inspection)
+dataset <- read.csv("C:/Users/AIMSSN/Desktop/TEYI_JEROME_SEDOWO/HDD_COURSE/2026_HDDA_PROJECT/HDDAdataexam26.csv", sep = ";", dec = ",")
+```
+
+
+```{r include=FALSE}
+# Check structure and dimensions
+str(dataset)
+dim(dataset)
+```
+
+
+# Results and Discussion
+
+## Description of the Study Population and Data Characteristics
+
+The analysis is based on a dataset of **369 observations**, where each observation corresponds to **one AIMS student**. The dataset contains **five quantitative variables** capturing students’ digital behavior, subjective well-being, physical activity, and online social status. Specifically, the variables include: daily smartphone screen time in minutes (`Phone`), daily time spent on social networks in minutes (`SocialNetworks`), a self-reported happiness score on a 1–10 scale (`Happiness`), daily walking distance in kilometers (`Walk`), and an Instagram follower-to-following ratio (`InstagramRatio`).
+
+From a data-type perspective, `Phone` and `Happiness` are stored as integers, while `SocialNetworks`, `Walk`, and `InstagramRatio` are stored as numeric variables.
+
+```{r include=FALSE}
+# Check for missing values
+colSums(is.na(dataset))
+
+# Number of duplicated rows
+sum(duplicated(dataset))
+dataset[duplicated(dataset), ]
+
+# Count unique rows
+nrow(unique(dataset))
+
+# Compare with total number of observations
+nrow(dataset)
+```
+
+
+```{r include=FALSE}
+# Remove duplicated rows
+dataset <- dataset[!duplicated(dataset), ]
+
+# Check dimensions after removal
+dim(dataset)
+```
+
+
+
+### Interpretation of the Descriptive Statistics
+
+The descriptive statistics provide a clear overview of students’ digital behavior, well-being, and physical activity. A typical student spends around **two hours per day on a smartphone** (median = 120 minutes) and approximately **one hour per day on social networks** (median = 60 minutes). Reported levels of well-being are generally high, with a median happiness score of **8 out of 10** (mean = 7.46). In terms of physical activity, students walk a moderate distance each day, with a median of **5 km** (mean = 6.22 km).
+
+Most students exhibit a balanced Instagram usage pattern, with a follower-to-following ratio close to **1** (median = 0.96). However, the data also reveal the presence of extreme values. Smartphone use and social network time reach very high maxima (up to **1,440 minutes per day**), while Instagram ratios can exceed **50**, indicating a small number of highly atypical profiles. These extreme values increase the mean relative to the median (Phone mean = 125.9 minutes; SocialNetworks mean = 80.4 minutes) and suggest right-skewed distributions.
+
+Overall, the results indicate substantial heterogeneity in digital behavior among students, contrasted with more stable patterns in happiness and physical activity. This variability highlights the importance of multivariate analysis to better understand the joint relationships between smartphone use, social media exposure, well-being, and lifestyle factors.
+
+
+```{r echo=FALSE}
+# Summary statistics
+summary(dataset)
+```
+
+
+### Bivariate Analysis: Correlation Structure
+
+The Pearson correlation matrix highlights a **strong positive association** between daily smartphone use and time spent on social networks (Phone–SocialNetworks: \(r = 0.719\)), suggesting that social media exposure is closely related to overall smartphone screen time in this student population. 
+
+All other pairwise correlations are **weak in magnitude** (\(|r| < 0.12\)), indicating limited linear relationships between smartphone use and the remaining variables. In particular, smartphone use shows a small negative correlation with happiness (Phone–Happiness: \(r = -0.114\)) and with walking distance (Phone–Walk: \(r = -0.074\)). The Instagram ratio is almost uncorrelated with phone use (Phone–InstagramRatio: \(r = -0.022\)) and social network time (SocialNetworks–InstagramRatio: \(r = 0.018\)), suggesting that Instagram “status” may not have a direct linear relationship with screen time, but could still matter through non-linear or profile-based effects.
+
+Overall, the correlation structure suggests that **social network time is the main linear correlate of smartphone use**, while the links with well-being, physical activity, and Instagram status appear weaker and may require multivariate methods (PCA/SVD and regression) to be examined more comprehensively.
+
+```{r echo=FALSE}
+cor_matrix <- cor(dataset, use = "complete.obs")
+print(cor_matrix)
+```
+```{r echo=FALSE}
+# Visualize correlation matrix
+corrplot(cor_matrix, method = "circle", type = "upper", tl.cex = 0.8)
+```
+
+Based on the correlation analysis, a preliminary suspicion emerges that **time spent on social networks is a key driver of smartphone use**, given their strong positive association (\(r = 0.719\)). In contrast, the relationships between smartphone use and happiness or physical activity appear weak, suggesting more subtle or indirect effects. The absence of a linear correlation between smartphone use and Instagram ratio indicates that potential effects may be **non-linear or profile-based**, justifying further multivariate analysis.
+
+### Principal Component Analysis (PCA): Exploratory Multivariate Structure of Student Behavior
+
+
+```{r include=FALSE}
+# Perform PCA with scaling
+pca_res <- PCA(dataset, scale.unit = TRUE, graph = FALSE)
+```
+
+```{r echo=FALSE}
+# Scree plot
+fviz_eig(pca_res, addlabels = TRUE, ylim = c(0, 100))
+```
+### Interpretation of the scree plot and choice of principal components
+
+The scree plot shows that the first principal component (Dim 1) explains **35%** of the total variance, while the second component (Dim 2) explains **22.9%**, leading to a **cumulative explained variance of 57.9%** for the first two axes. In exploratory principal component analysis, a commonly used empirical rule is to retain the smallest number of components that explain **at least 50%** of the total variance. Since the first two components exceed this threshold, retaining them provides a **statistically sound compromise between dimensionality reduction and information preservation**, while allowing a clear and interpretable two-dimensional representation of the main structure of the data.
+
+
+
+
+```{r echo=FALSE}
+# Correlation circle of variables
+fviz_pca_var(
+  pca_res,
+  col.var = "contrib",
+  gradient.cols = c("steelblue", "orange", "red"),
+  repel = TRUE
+)
+```
+
+### Interpretation of opposing and related variables in the PCA map
+
+In this analysis, **Happiness** and **InstagramRatio** clearly point in opposite directions along the second principal component (Dim 2). This indicates that students with a **high Instagram follower-to-following ratio** tend to be positioned opposite to those reporting **higher levels of happiness**. In simple terms, higher Instagram social status is associated with lower subjective well-being.
+
+In contrast, **Phone** and **SocialNetworks** are not opposed to Happiness or Walk. Instead, they are almost perpendicular to them, which indicates **independence rather than opposition**. This means that heavy smartphone or social network use does not automatically imply lower happiness or reduced physical activity; these behaviors describe different aspects of student life.
+
+Finally, some variables clearly move in the same direction. **Phone** and **SocialNetworks** are strongly aligned, showing a positive relationship: students who spend more time on social networks also spend more time on their phones. Similarly, **Happiness** and **Walk** point in a similar direction, indicating that students who walk more tend to report higher happiness levels.
+
+Overall, the PCA reveals two main independent behavioral dimensions: a **digital usage dimension** (phone and social networks) and a **well-being and lifestyle dimension** (happiness and physical activity), with Instagram social status acting as a contrasting factor to well-being rather than a direct driver of screen time.
+
+
+### Implications of the PCA results with respect to the research hypotheses
+
+The PCA results strengthen several suspicions formulated in the initial hypotheses. First, the strong alignment between **Phone** and **SocialNetworks** confirms the suspicion underlying **H1**, namely that time spent on social networks is a central driver of smartphone use. This relationship appears as the dominant structural pattern in the data.
+
+Second, the fact that **Happiness** and **Walk** form a separate axis that is largely independent from smartphone and social network usage suggests that well-being and physical activity do not directly drive smartphone overuse. This observation weakens the suspicion behind **H2** and **H3** at a purely linear and global level, indicating that their effects, if any, are likely to be subtle or indirect.
+
+Third, the opposition observed between **Happiness** and **InstagramRatio** supports the suspicion behind **H4**: Instagram-related social status does not increase smartphone use directly but may be associated with lower well-being. This suggests a profile-based mechanism rather than a simple linear effect.
+
+Overall, these findings reinforce **H5**, indicating that smartphone overuse is a multidimensional phenomenon structured around distinct behavioral axes. They justify the use of multivariate regression and categorical profiling to further investigate which factors truly influence smartphone use.
+
+## 1. Construct dummy variables and add to dataset
+```{r include=FALSE}
+# 1. Construct dummy variables and add to dataset
+dataset$LowInstagram <- ifelse(dataset$InstagramRatio < 0.5, 1, 0)
+dataset$HighInstagram <- ifelse(dataset$InstagramRatio > 2, 1, 0)
+```
+
+
+## 2. Multiple linear regression for smartphone use (Phone) and interpretation
+
+To investigate smartphone addiction among AIMS students, we fitted a multiple linear regression model with **Phone** (daily smartphone screen time in minutes) as the dependent variable and **SocialNetworks**, **Happiness**, **Walk**, **LowInstagram**, and **HighInstagram** as predictors.
+
+```{r echo=FALSE}
+model_full <- lm(Phone ~ SocialNetworks + Happiness + Walk + LowInstagram + HighInstagram, data = dataset)
+
+# Summary of the model
+summary(model_full)
+
+```
+Overall, the model is **highly significant** (F = 83.38, p-value < 2.2e-16), meaning that the predictors are jointly useful for explaining variation in smartphone time. The model explains a substantial share of the variability in Phone time, with **R² = 0.535** and **Adjusted R² = 0.529**, indicating that about **53%** of the differences in smartphone use across students are accounted for by these variables.
+
+The strongest driver is **SocialNetworks**, which has a large and highly significant positive coefficient (β = 0.911, p < 2e-16). Statistically, this means that, **holding all other variables constant**, each additional minute spent on social networks is associated with an average increase of about **0.91 minutes** of total smartphone time. This provides strong evidence supporting **H1** (social network time increases smartphone use).
+
+**Happiness** has a statistically significant negative association with smartphone time (β = −7.40, p = 0.013). This implies that, all else equal, a one-point increase in happiness score (on a 1–10 scale) is associated with about **7.4 fewer minutes** of smartphone use per day, which supports **H2** (higher well-being relates to lower smartphone use).
+
+In contrast, **Walk** is not statistically significant (β = −0.96, p = 0.519), suggesting that daily walking distance does not have a clear linear effect on smartphone time in this model. Therefore, **H3 is not supported** at the 5% significance level in this regression.
+
+Regarding Instagram profile dummies, **LowInstagram** is not significant (β = +17.91, p = 0.124), meaning that having a very low Instagram ratio (< 0.5) does not significantly change predicted smartphone time compared to the reference group. **HighInstagram** shows a negative coefficient (β = −34.78) and is **marginally significant** at the 10% level (p = 0.0825), suggesting a *possible* tendency for students with very high Instagram ratios (> 2) to spend less time on their phones, but this evidence is weaker and does not meet the usual 5% threshold. Consequently, **H4 is not clearly supported** in a direct linear sense and may require further profiling or non-linear exploration.
+
+Finally, the residual standard error is 91.17 minutes, indicating that although the model explains a meaningful portion of variability, individual smartphone use still varies considerably beyond what is captured by these predictors, which is expected in behavioral data.
+
+### 3.Usefulness of the regression model for predicting smartphone time
+
+To assess whether the regression model is useful for predicting daily smartphone time (**Phone**), we examine the **global F-test** provided by the ANOVA table. This test evaluates the null hypothesis that **all slope coefficients are jointly equal to zero**, meaning that none of the explanatory variables (except the intercept) has any predictive power.
+
+Formally, the hypotheses are:
+- **H₀:** β₁ = β₂ = β₃ = β₄ = β₅ = 0  
+- **H₁:** At least one coefficient is different from zero
+
+```{r echo=FALSE}
+# If overall p-value > 0.05, model not useful (Hastie et al., 2009, p. 57, F-test for nullity of coefficients)
+anova(model_full)
+```
+
+The ANOVA table shows that the model has an **overall p-value far below the 5% significance level** (p-value < 2e-16). Consequently, we **reject the null hypothesis** of joint nullity of the coefficients.
+
+From a statistical perspective (see Hastie, Tibshirani, and Friedman, 2009), this result indicates that the linear regression model is **useful for predicting smartphone time**, as the explanatory variables jointly explain a significant portion of the variability in **Phone** usage.
+
+In practical terms, this means that smartphone use among AIMS students is not random: it can be meaningfully explained by a combination of social network exposure, well-being indicators, and Instagram-related profiles. Even though some individual predictors are not significant on their own, the model as a whole provides statistically valid predictive information.
+
+### 4. Significance of *SocialNetworks* in explaining smartphone use
+
+To assess whether **SocialNetworks** significantly influences daily smartphone time (**Phone**), we rely on the **Student t-test** associated with its regression coefficient. The null hypothesis tested is:
+
+- **H₀:** The coefficient of *SocialNetworks* is equal to zero (no effect on Phone)
+- **H₁:** The coefficient of *SocialNetworks* is different from zero (significant effect on Phone)
+
+```{r echo=FALSE}
+# Extract p-value
+social_p <- summary(model_full)$coefficients["SocialNetworks", "Pr(>|t|)"]
+print("P-value:")
+social_p
+```
+The extracted p-value for *SocialNetworks* is extremely small  
+(**p = 1.86 × 10⁻⁶⁰**), which is far below the conventional 5% significance level.
+
+As a result, we **strongly reject the null hypothesis**. This provides overwhelming statistical evidence that **time spent on social networks has a significant influence on smartphone use**, even after controlling for happiness, physical activity, and Instagram profile categories.
+
+Moreover, the estimated coefficient is positive (β ≈ 0.91), indicating that an increase in social network time is associated with an increase in overall smartphone screen time. This result clearly confirms **Hypothesis H1**, identifying social network exposure as the dominant driver of smartphone use among AIMS students.
+
+### 5. Effect of *Happiness* on smartphone use
+
+To determine whether **Happiness** helps reduce the time AIMS students spend on their phones, we examine both the **sign** and the **statistical significance** of its regression coefficient.
+
+
+```{r echo=FALSE}
+happiness_coef <- coef(model_full)["Happiness"]
+happiness_p <- summary(model_full)$coefficients["Happiness", "Pr(>|t|)"]
+
+print(happiness_coef)
+print(happiness_p)
+```
+The estimated coefficient for *Happiness* is **negative** (β = −7.40), indicating that, all else being equal, an increase in the happiness score is associated with a decrease in daily smartphone use. More precisely, a one-point increase in the happiness score (on a 1–10 scale) corresponds on average to about **7.4 fewer minutes** spent on the phone per day.
+
+The associated p-value is **0.013**, which is below the 5% significance level. Therefore, the Student t-test leads us to **reject the null hypothesis** that the coefficient of *Happiness* is equal to zero.
+
+Statistically, this provides evidence that **Happiness has a significant and negative impact on smartphone use**. Consequently, according to the regression results, higher levels of happiness do help reduce the time AIMS students spend on their phones. This finding supports **Hypothesis H2**, suggesting that subjective well-being plays a protective role against excessive smartphone use.
+
+### 6. Predict for students A and B
+
+```{r echo=FALSE}
+# Create new data frame with values (InstagramRatio used to set dummies)
+new_data <- data.frame(
+  SocialNetworks = c(120, 120),
+  Happiness = c(4, 4),
+  Walk = c(15, 15),
+  LowInstagram = c(0, 1),  # A: 2.1 > 2 -> Low=0, High=1; B: 0.4 < 0.5 -> Low=1, High=0
+  HighInstagram = c(1, 0)
+)
+
+# Predictions (use predict.lm as indicated, though predict() is equivalent)
+predictions <- predict.lm(model_full, newdata = new_data)
+phone_A <- predictions[1]
+phone_B <- predictions[2]
+
+print("Phone A")
+phone_A
+
+print("Phone B")
+phone_B
+```
+### 7. Backward stepwise regression (5% level): final selected model and interpretation
+
+
+We applied a manual backward elimination procedure starting from the full model  
+**Phone ~ SocialNetworks + Happiness + Walk + LowInstagram + HighInstagram**, and at each step we removed the predictor with the **largest p-value** (least significant), until all remaining predictors were significant at the 5% level.
+
+**Step 0 (full model).**  
+In the full model, the least significant predictor is **Walk** (p = 0.519). Therefore, Walk is removed first.
+
+**Step 1 (without Walk).**  
+After refitting the model without Walk, the least significant predictor becomes **LowInstagram** (p = 0.106), which is larger than the p-value of HighInstagram (p = 0.0847). Hence, LowInstagram is removed next.
+
+**Step 2 (final model).**  
+The resulting model is:
+\[
+\text{Phone} \sim \text{SocialNetworks} + \text{Happiness} + \text{HighInstagram}.
+\]
+In this final model, all remaining predictors are statistically significant at the 5% level:
+- **SocialNetworks**: p < 2e-16 (strong positive effect)
+- **Happiness**: p = 0.00606 (significant negative effect)
+- **HighInstagram**: p = 0.04667 (significant negative effect)
+
+
+
+*Step 0: Full model*
+
+```{r echo=FALSE}
+# Step 0: Full model
+model_full <- lm(
+  Phone ~ SocialNetworks + Happiness + Walk + LowInstagram + HighInstagram,
+  data = dataset
+)
+summary(model_full)
+```
+
+*Step 1: Remove the most non-significant predictor*
+
+```{r echo=FALSE}
+# Walk has the largest p-value (p = 0.519 > 0.05)
+
+model_step1 <- lm(
+  Phone ~ SocialNetworks + Happiness + LowInstagram + HighInstagram,
+  data = dataset
+)
+summary(model_step1)
+```
+*Step 2: Remove the next most non-significant predictor*
+
+```{r echo=FALSE}
+# LowInstagram has the largest p-value (> 0.05)
+model_step2 <- lm(
+  Phone ~ SocialNetworks + Happiness + HighInstagram,
+  data = dataset
+)
+summary(model_step2)
+```
+
+
+The model remains highly significant overall (F-test p < 2.2e-16). Although the explained variance decreases slightly compared to the full model (Adjusted R² from **0.5288** to **0.5275**), the final model is more parsimonious and satisfies the requirement that only significant predictors are retained.
+
+**Interpretation.**  
+These results suggest that daily smartphone time is mainly explained by social network exposure (positive effect), while higher happiness reduces smartphone use (negative effect). In addition, being in the *HighInstagram* group (InstagramRatio > 2) is associated with lower smartphone time relative to the reference group, once other variables are controlled for.
+
+
+### Question 8 — Model choice based on predictor significance and adjusted R²
+
+the Table compares the full regression model from Question (2) and the backward stepwise model from Question (7) using two criteria: (i) the **statistical significance of predictors** at the 5% level and (ii) the **adjusted coefficient of determination** (Adjusted R²).
+
+```{r echo=FALSE}
+# Extract p-values from both models
+pvals_full <- summary(model_full)$coefficients[, "Pr(>|t|)"]
+pvals_step <- summary(model_step2)$coefficients[, "Pr(>|t|)"]
+
+# Create comparison table
+comparison_table <- data.frame(
+  Predictor = union(names(pvals_full), names(pvals_step)),
+  P_value_Full_Model = pvals_full[match(union(names(pvals_full), names(pvals_step)), names(pvals_full))],
+  P_value_Stepwise_Model = pvals_step[match(union(names(pvals_full), names(pvals_step)), names(pvals_step))]
+)
+
+# Add Adjusted R-squared
+comparison_table$Adjusted_R2_Full_Model <- summary(model_full)$adj.r.squared
+comparison_table$Adjusted_R2_Stepwise_Model <- summary(model_step2)$adj.r.squared
+
+# Display table
+comparison_table
+
+```
+
+
+In the **full model (Q2)**, only **SocialNetworks** (p = 1.86×10⁻⁶⁰) and **Happiness** (p = 0.013) are significant at 5%. The other predictors are not significant: **Walk** (p = 0.519), **LowInstagram** (p = 0.124), and **HighInstagram** (p = 0.082). The adjusted R² of this model is **0.5288**.
+
+In the **stepwise model (Q7)**, the non-significant variables (**Walk** and **LowInstagram**) are removed, and **HighInstagram** becomes statistically significant at the 5% level (p = 0.0467), together with **SocialNetworks** (p ≈ 1.23×10⁻⁶⁰) and **Happiness** (p = 0.0061). The adjusted R² of this reduced model is **0.5275**, which is extremely close to that of the full model (difference ≈ 0.0013).
+
+Therefore, according to the required criteria, the **most useful model is the stepwise model from Question (7)**:
+\[
+\text{Phone} \sim \text{SocialNetworks} + \text{Happiness} + \text{HighInstagram}.
+\]
+It achieves almost the same predictive performance (Adjusted R²) as the full model while retaining **only statistically significant predictors**, making it more parsimonious and statistically coherent for predicting smartphone time.
+
+### 9.Predicted smartphone time using the best regression model
+
+Using the best model selected in Question 8, namely  
+\[
+\text{Phone} \sim \text{SocialNetworks} + \text{Happiness} + \text{HighInstagram},
+\]
+we predict the daily smartphone time for an AIMS student who spends **30 minutes per day on social networks**, has a **happiness score of 8**, walks **2 kilometers per day**, and has an **Instagram ratio of 2.1**, which classifies the student as belonging to the *HighInstagram* group.
+
+
+```{r echo=FALSE}
+# Prediction using the best (stepwise) model
+new_data9 <- data.frame(
+  SocialNetworks = 30,
+  Happiness = 8,
+  HighInstagram = 1
+)
+
+pred9 <- predict(model_step2, newdata = new_data9)
+pred9
+```
+
+The predicted smartphone time obtained from the model is:
+
+\[
+\widehat{\text{Phone}} = 38.6 \text{ minutes per day}.
+\]
+
+This relatively low predicted value is consistent with the structure of the model. The limited time spent on social networks strongly reduces overall smartphone use, the high happiness score contributes further to a decrease in phone time, and belonging to the *HighInstagram* category has an additional negative effect on predicted smartphone usage. Together, these factors explain why the model predicts a low daily smartphone screen time for this student profile.
+
+### 10. Interpretation of the predicted smartphone time (Question 10)
+
+```{r echo=FALSE}
+# Prediction using the best (stepwise) model
+# SocialNetworks = 30, Happiness = 8, InstagramRatio = 0.4 → HighInstagram = 0
+
+new_data10 <- data.frame(
+  SocialNetworks = 30,
+  Happiness = 8,
+  HighInstagram = 0
+)
+
+pred10 <- predict(model_step2, newdata = new_data10)
+pred10
+
+```
+
+Using the best regression model, the predicted daily smartphone time for an AIMS student who spends **30 minutes on social networks**, has a **happiness score of 8**, walks **2 km per day**, and has a **low Instagram ratio (0.4)** is:
+
+\[
+\widehat{\text{Phone}} = 78.0 \text{ minutes per day}.
+\]
+
+This predicted value is substantially higher than the prediction obtained for a student with the same characteristics but a **high Instagram ratio** (Question 9), for whom the predicted smartphone time was approximately **38.6 minutes per day**. Since all other variables are held constant, this difference is entirely attributable to the Instagram profile indicator.
+
+The result illustrates that, according to the model, students with a **low Instagram follower-to-following ratio** are expected to spend more time on their phones than students with a high ratio, even when their social network use and happiness levels are similar. This finding reinforces the idea that Instagram-related profiles influence smartphone use in a **profile-based manner**, rather than through a simple linear effect.
+
+# Discussion
+
+This study aimed to identify the main drivers of smartphone overuse among AIMS students using a multivariate analytical framework combining exploratory and inferential methods. The discussion below revisits the initial hypotheses in light of the empirical results and highlights their implications for understanding student digital behavior.
+
+### Interpretation of the hypotheses
+
+The results provide strong and consistent support for **Hypothesis H1**, which stated that time spent on social networks has a significant positive effect on smartphone use. This relationship emerges clearly at all stages of the analysis. The correlation analysis reveals a strong positive association between *Phone* and *SocialNetworks*. The PCA further confirms this finding by showing that both variables dominate the first principal component, which captures the main source of variability in the data. Finally, the regression analysis identifies *SocialNetworks* as the strongest and most robust predictor of smartphone time, with a large and highly significant positive coefficient. Together, these results indicate that smartphone overuse among AIMS students is primarily driven by social media exposure rather than by smartphone use per se.
+
+**Hypothesis H2**, which posited that higher happiness levels are associated with lower smartphone use, is also supported by the regression results. While the correlation between *Phone* and *Happiness* is weak at the bivariate level, happiness becomes a statistically significant and negative predictor once other variables are controlled for. This suggests that well-being does not operate as a dominant global factor but plays a protective role when accounting for social network use and digital profiles. The PCA complements this interpretation by positioning happiness on a distinct axis, largely independent of digital intensity.
+
+In contrast, **Hypothesis H3** is not supported by the regression analysis. Although *Walk* is positively associated with happiness in the PCA and descriptive analysis, it does not have a significant direct effect on smartphone time once other variables are included in the model. This result suggests that physical activity may contribute indirectly to well-being rather than acting as a direct determinant of smartphone use. In academically demanding environments such as AIMS, students may combine high levels of physical activity with intensive digital engagement, weakening a simple linear relationship between walking and phone use.
+
+**Hypothesis H4**, which expected higher Instagram ratios to be associated with higher smartphone use, is not confirmed in its original formulation. On the contrary, the PCA shows that *InstagramRatio* is opposed to *Happiness*, and the regression analysis—especially after backward stepwise selection—reveals a significant negative effect of the *HighInstagram* indicator. This finding suggests that students with a high follower-to-following ratio tend to spend less time on their phones than others, once social network time and happiness are controlled for. A plausible interpretation is that high Instagram status reflects a more selective or instrumental use of social media rather than compulsive consumption. This result highlights the importance of distinguishing between *status* and *time spent* on platforms.
+
+Finally, the results strongly support **Hypothesis H5**. The PCA demonstrates that smartphone overuse is structured along multiple independent dimensions, separating digital intensity from well-being and lifestyle. The regression and model selection procedures further show that no single variable fully explains smartphone use. Instead, meaningful insights emerge only when variables are analyzed jointly. The stepwise-selected model, which retains only significant predictors while preserving almost the same adjusted R² as the full model, illustrates the value of multivariate approaches for parsimonious and interpretable modeling.
+
+### Implications for decision-making and student well-being
+
+From a practical perspective, these findings suggest that interventions aimed at reducing smartphone overuse among AIMS students should primarily target **social network consumption** rather than smartphone use in general. Additionally, promoting student well-being may have indirect benefits in reducing excessive phone use. The differentiated role of Instagram profiles also indicates that not all heavy users should be treated as a homogeneous group; profile-based strategies may be more effective than one-size-fits-all policies.
+
+### Limitations and perspectives
+
+This study relies on cross-sectional data and linear modeling assumptions, which limit causal interpretation. Future work could explore non-linear effects, interaction terms, or longitudinal data to better capture behavioral dynamics. Moreover, extending the analysis to other social platforms and incorporating psychological or academic performance indicators could further enrich the understanding of smartphone overuse.
+
+Overall, the multivariate framework adopted in this study provides a coherent and decision-relevant understanding of smartphone use among AIMS students, bridging exploratory insights and predictive modeling.
+
+
+# Conclusion
+
+This study applied multivariate data analysis methods to investigate the drivers of smartphone overuse among AIMS students and to generate insights relevant for student well-being decision-making. By combining descriptive analysis, correlation analysis, Principal Component Analysis, and multiple linear regression with model selection, the study provided a coherent and structured understanding of student digital behavior.
+
+The results consistently identify **time spent on social networks** as the main determinant of daily smartphone use. This factor dominates both the exploratory and inferential analyses, confirming that smartphone overuse is primarily driven by social media consumption rather than by smartphone use itself. In addition, **happiness** emerges as a significant protective factor, with higher well-being levels associated with reduced smartphone time once other variables are controlled for.
+
+In contrast, **physical activity**, measured by daily walking distance, does not show a direct linear effect on smartphone use in the regression framework, suggesting that its influence may be indirect and mediated through well-being. The analysis also reveals an unexpected but informative role of **Instagram profiles**: students with a high follower-to-following ratio tend to spend less time on their phones, highlighting the importance of distinguishing between social media status and consumption intensity.
+
+The PCA and regression results together confirm that smartphone overuse is a **multidimensional phenomenon**, structured around distinct behavioral axes. The backward stepwise regression led to a parsimonious and statistically coherent model that retains only significant predictors while preserving almost the same explanatory power as the full model.
+
+Overall, this study demonstrates the value of multivariate approaches for understanding complex digital behaviors in academic environments. The findings suggest that effective interventions should focus on managing social network exposure and supporting student well-being, while recognizing heterogeneity in digital profiles. These insights provide a data-driven basis for designing targeted and evidence-based student support strategies at AIMS and similar higher education institutions.
+
